@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+
+# builds & coverage
+dist/
+build/
+coverage/
+.vite/
+
+# env & secrets (never commit API keys)
+.env
+.env.*
+!.env.example
+
+# logs & OS/editor
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# test artifacts
+playwright-report/
+test-results/
+
+# internal working notes (not published)
+PLAN.md
