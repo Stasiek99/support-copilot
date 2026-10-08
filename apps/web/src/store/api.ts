@@ -1,16 +1,20 @@
-import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react';
-import { seedConversations, type Conversation } from '@support-copilot/shared';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { analysisSchema, type Analysis, type Conversation } from '@support-copilot/shared';
+import { API_BASE_URL } from '../lib/config';
 
-// Stage 2 serves seed data locally. Stage 3 swaps `fakeBaseQuery` for `fetchBaseQuery`
-// against the Express server; components only depend on the generated hooks.
 export const api = createApi({
   reducerPath: 'api',
-  baseQuery: fakeBaseQuery<string>(),
+  baseQuery: fetchBaseQuery({ baseUrl: API_BASE_URL }),
   endpoints: (build) => ({
     getConversations: build.query<Conversation[], void>({
-      queryFn: () => ({ data: structuredClone(seedConversations) }),
+      query: () => 'conversations',
+    }),
+    // Keyed by the conversation content, so a new message triggers a fresh analysis.
+    getAnalysis: build.query<Analysis, Conversation>({
+      query: (conversation) => ({ url: 'assist/analysis', method: 'POST', body: conversation }),
+      transformResponse: (response: unknown) => analysisSchema.parse(response),
     }),
   }),
 });
 
-export const { useGetConversationsQuery } = api;
+export const { useGetConversationsQuery, useGetAnalysisQuery } = api;

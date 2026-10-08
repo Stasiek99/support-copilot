@@ -1,19 +1,17 @@
 import { MAX_MESSAGE_LENGTH } from '@support-copilot/shared';
 import type { FormEvent } from 'react';
+import { REPLY_FIELD_ID } from '../lib/dom';
 import { formatTimestamp } from '../lib/format';
-import { useGetConversationsQuery } from '../store/api';
+import { useSelectedConversation } from '../hooks/useSelectedConversation';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { sendReply } from '../store/sendReply';
 import { draftChanged } from '../store/uiSlice';
 import styles from './ConversationView.module.css';
 
 export function ConversationView() {
-  const selectedId = useAppSelector((state) => state.ui.selectedConversationId);
+  const conversation = useSelectedConversation();
   const draft = useAppSelector((state) => state.ui.draftReply);
   const dispatch = useAppDispatch();
-  const { conversation } = useGetConversationsQuery(undefined, {
-    selectFromResult: ({ data }) => ({ conversation: data?.find((c) => c.id === selectedId) }),
-  });
 
   if (!conversation) {
     return (
@@ -55,11 +53,11 @@ export function ConversationView() {
       </ol>
 
       <form className={styles.composer} onSubmit={handleSubmit}>
-        <label className={styles.label} htmlFor="reply">
+        <label className={styles.label} htmlFor={REPLY_FIELD_ID}>
           Reply
         </label>
         <textarea
-          id="reply"
+          id={REPLY_FIELD_ID}
           className={styles.textarea}
           value={draft}
           maxLength={MAX_MESSAGE_LENGTH}

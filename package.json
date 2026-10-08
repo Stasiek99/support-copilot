@@ -11,17 +11,20 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace @support-copilot/web",
+    "dev": "concurrently -k -n server,web -c blue,green \"npm:dev:server\" \"npm:dev:web\"",
     "build": "npm run build --workspaces --if-present",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "check": "npm run lint && npm run format:check && npm run typecheck && npm run test"
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm run test",
+    "dev:server": "npm run dev --workspace @support-copilot/server",
+    "dev:web": "npm run dev --workspace @support-copilot/web"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "concurrently": "^10.0.5",
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsx-a11y": "^6.10.2",
@@ -31,5 +34,8 @@
     "prettier": "^3.9.9",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.71.1"
+  },
+  "overrides": {
+    "shell-quote": "^1.12.0"
   }
 }
