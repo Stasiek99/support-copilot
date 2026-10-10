@@ -9,7 +9,6 @@ export const api = createApi({
     getConversations: build.query<Conversation[], void>({
       query: () => 'conversations',
     }),
-    // Keyed by the conversation content, so a new message triggers a fresh analysis.
     getAnalysis: build.query<Analysis, Conversation>({
       query: (conversation) => ({ url: 'assist/analysis', method: 'POST', body: conversation }),
       transformResponse: (response: unknown) => analysisSchema.parse(response),

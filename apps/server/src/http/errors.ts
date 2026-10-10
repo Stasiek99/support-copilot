@@ -32,7 +32,6 @@ export const notFoundHandler: RequestHandler = (req, res) => {
   sendError(res, String(req.id), 404, 'not_found', 'Resource not found');
 };
 
-/** Body-parser errors (malformed JSON, payload too large) carry a 4xx `status` and `expose`. */
 function isClientParserError(error: unknown): error is { status: number; expose: boolean } {
   return (
     typeof error === 'object' &&
@@ -63,7 +62,6 @@ export const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
     return;
   }
 
-  // Never leak internals (or message content) to the client; the log carries the details.
   req.log.error({ err: error }, 'unhandled error');
   sendError(res, requestId, 500, 'internal_error', 'Something went wrong');
 };

@@ -1,6 +1,5 @@
 import type { Analysis, Category, Conversation } from '@support-copilot/shared';
 
-/** `{name}` is replaced with the customer's first name. */
 const suggestionsByConversationId: Record<string, string> = {
   'c-1001':
     "Hi {name}, I'm sorry about the trouble with order #48213. The payment attempt was declined by your bank, and the amount on your statement is a temporary authorization hold, not a charge. It is released automatically within 3-5 business days, so please don't pay again yet. If you like, I can help you place the order again with a different payment method right now.",

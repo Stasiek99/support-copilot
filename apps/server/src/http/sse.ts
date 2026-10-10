@@ -6,7 +6,6 @@ export function startEventStream(res: Response): void {
     'Content-Type': 'text/event-stream; charset=utf-8',
     'Cache-Control': 'no-cache, no-transform',
     Connection: 'keep-alive',
-    // Prevent reverse proxies (nginx, Render) from buffering the stream.
     'X-Accel-Buffering': 'no',
   });
   res.flushHeaders();

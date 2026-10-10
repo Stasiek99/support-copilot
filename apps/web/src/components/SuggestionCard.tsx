@@ -20,9 +20,8 @@ export function SuggestionCard({ conversation }: { conversation: Conversation })
   const dispatch = useAppDispatch();
   const stored = useAppSelector((state) => state.suggestion);
   const suggestion = stored.conversationId === conversation.id ? stored : initialSuggestionState;
-  const { status, text, error } = suggestion;
+  const { status, text, sources, error } = suggestion;
 
-  // Leaving the conversation (or the panel) must not keep a stream running in the background.
   useEffect(() => () => cancelSuggestion(), [conversation.id]);
 
   const accept = () => {
@@ -39,7 +38,6 @@ export function SuggestionCard({ conversation }: { conversation: Conversation })
         Suggested reply
       </h3>
 
-      {/* Streamed text is not a live region (it would be read token by token); status is. */}
       <p className="visually-hidden" role="status">
         {STATUS_ANNOUNCEMENTS[status]}
       </p>
@@ -55,6 +53,20 @@ export function SuggestionCard({ conversation }: { conversation: Conversation })
         >
           {text}
         </p>
+      )}
+
+      {sources.length > 0 && (
+        <div className={styles.sources}>
+          <h4 className={styles.sourcesTitle}>Based on</h4>
+          <ul aria-label="Knowledge base sources">
+            {sources.map((source) => (
+              <li key={source.id} className={styles.source}>
+                <span className={styles.sourceTitle}>{source.title}</span>
+                <span className={styles.sourceText}>{source.text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
 
       {status === 'error' && (

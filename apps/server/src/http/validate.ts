@@ -1,7 +1,6 @@
 import type { z } from 'zod';
 import { HttpError } from './errors';
 
-/** Parses untrusted input. Error details carry paths and rules, never the submitted values. */
 export function parseBody<T extends z.ZodType>(schema: T, body: unknown): z.infer<T> {
   const result = schema.safeParse(body);
   if (result.success) return result.data;

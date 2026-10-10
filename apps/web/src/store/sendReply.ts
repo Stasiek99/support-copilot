@@ -2,7 +2,6 @@ import { api } from './api';
 import type { AppThunk } from './store';
 import { draftCleared } from './uiSlice';
 
-/** Appends an agent message to the cached conversation and clears the draft. */
 export const sendReply =
   (conversationId: string, text: string): AppThunk =>
   (dispatch) => {

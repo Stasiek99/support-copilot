@@ -6,16 +6,10 @@ function parseBlock(block: string): StreamEvent | null {
     .filter((line) => line.startsWith('data:'))
     .map((line) => line.slice('data:'.length).trimStart())
     .join('\n');
-  // Blocks without data lines are comments/keep-alives.
   if (!data) return null;
   return streamEventSchema.parse(JSON.parse(data));
 }
 
-/**
- * Reads a Server-Sent Events response body and yields validated events.
- * Handles events split across network chunks and CRLF line endings. Cancels the
- * underlying stream when the consumer stops iterating.
- */
 export async function* readStreamEvents(response: Response): AsyncGenerator<StreamEvent> {
   if (!response.body) throw new Error('Response has no body');
 

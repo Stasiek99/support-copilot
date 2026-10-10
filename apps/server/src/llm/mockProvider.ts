@@ -1,16 +1,13 @@
 import { setTimeout as sleep } from 'node:timers/promises';
 import { analysisSchema, type Analysis, type Conversation } from '@support-copilot/shared';
 import { analysisFor, suggestionFor } from './mockFixtures';
-import type { LlmCallOptions, LlmProvider } from './provider';
+import type { LlmCallOptions, LlmProvider, SuggestOptions } from './provider';
 
 export interface MockProviderOptions {
-  /** Pause between streamed chunks, to make streaming visible in the UI. */
   tokenDelayMs?: number;
-  /** Pause before the analysis resolves, to make loading states visible. */
   analysisDelayMs?: number;
 }
 
-/** Deterministic provider for development, tests and the public demo. No network, no cost. */
 export class MockProvider implements LlmProvider {
   readonly name = 'mock';
   private readonly tokenDelayMs: number;
@@ -23,7 +20,7 @@ export class MockProvider implements LlmProvider {
 
   async *suggestReply(
     conversation: Conversation,
-    { signal }: LlmCallOptions,
+    { signal }: SuggestOptions,
   ): AsyncGenerator<string> {
     for (const chunk of suggestionFor(conversation).match(/\S+\s*/g) ?? []) {
       await pause(this.tokenDelayMs, signal);

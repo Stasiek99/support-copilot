@@ -6,10 +6,12 @@ import type { Logger } from 'pino';
 import { pinoHttp } from 'pino-http';
 import { errorHandler, notFoundHandler } from './http/errors';
 import type { LlmProvider } from './llm/provider';
+import type { KnowledgeBase } from './rag/knowledgeBase';
 import { createAssistRouter } from './routes/assist';
 
 export interface AppOptions {
   provider: LlmProvider;
+  knowledge: KnowledgeBase;
   logger: Logger;
   rateLimitPerMin: number;
   streamTimeoutMs: number;
@@ -20,6 +22,7 @@ const SAFE_REQUEST_ID = /^[\w-]{1,64}$/;
 
 export function createApp({
   provider,
+  knowledge,
   logger,
   rateLimitPerMin,
   streamTimeoutMs,
@@ -32,7 +35,6 @@ export function createApp({
   app.use(
     pinoHttp({
       logger,
-      // Correlation ID: reuse a well-formed incoming ID, otherwise generate one.
       genReqId: (req, res) => {
         const incoming = req.headers['x-request-id'];
         const id =
@@ -41,7 +43,6 @@ export function createApp({
         return id;
       },
       autoLogging: { ignore: (req) => req.url === '/api/health' },
-      // Log only what is needed to correlate; never headers, query strings or bodies.
       serializers: {
         req: (req: { id: string; method: string; url: string }) => ({
           id: req.id,
@@ -60,7 +61,10 @@ export function createApp({
   app.get('/api/conversations', (_req, res) => {
     res.json(seedConversations);
   });
-  app.use('/api/assist', createAssistRouter({ provider, rateLimitPerMin, streamTimeoutMs }));
+  app.use(
+    '/api/assist',
+    createAssistRouter({ provider, knowledge, rateLimitPerMin, streamTimeoutMs }),
+  );
 
   app.use(notFoundHandler);
   app.use(errorHandler);

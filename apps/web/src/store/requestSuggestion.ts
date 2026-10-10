@@ -7,19 +7,17 @@ import {
   suggestionCompleted,
   suggestionDelta,
   suggestionFailed,
+  suggestionSourcesReceived,
   suggestionStarted,
   suggestionStopped,
 } from './suggestionSlice';
 
-/** A failure whose message is safe to show to the agent. */
 class SuggestionError extends Error {}
 
 const GENERIC_ERROR = 'Could not generate a suggestion. Please try again.';
 
-// One suggestion stream at a time; starting a new one cancels the previous.
 let activeController: AbortController | null = null;
 
-/** Aborts the in-flight stream (if any) without touching the Redux state. */
 export function cancelSuggestion(): void {
   activeController?.abort();
   activeController = null;
@@ -31,10 +29,6 @@ async function describeFailure(response: Response): Promise<string> {
   return parsed.success ? parsed.data.error.message : GENERIC_ERROR;
 }
 
-/**
- * Streams one suggestion into the store. Resolves after `done` (or after the signal aborts);
- * throws on any failure. Error handling lives in the caller.
- */
 async function streamSuggestion(
   conversation: Conversation,
   signal: AbortSignal,
@@ -51,6 +45,9 @@ async function streamSuggestion(
   for await (const event of readStreamEvents(response)) {
     if (signal.aborted) return;
     switch (event.type) {
+      case 'sources':
+        dispatch(suggestionSourcesReceived(event.sources));
+        break;
       case 'delta':
         dispatch(suggestionDelta(event.text));
         break;

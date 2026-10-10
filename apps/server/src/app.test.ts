@@ -11,13 +11,29 @@ import { pino } from 'pino';
 import request from 'supertest';
 import { createApp, type AppOptions } from './app';
 import { MockProvider } from './llm/mockProvider';
+import { createKnowledgeBase } from './rag/knowledgeBase';
 import type { LlmProvider } from './llm/provider';
 
 const anna = seedConversations[0]!;
 
+const declinedCardSource = {
+  id: 'payments#declined-card-payments',
+  title: 'Payments FAQ: Declined card payments',
+  text: 'A declined card payment leaves a temporary authorization hold that is released in 3-5 business days.',
+};
+const knowledge = createKnowledgeBase([
+  declinedCardSource,
+  {
+    id: 'account#password-reset',
+    title: 'Account FAQ: Password reset',
+    text: 'Reset your password from the login page.',
+  },
+]);
+
 function buildApp(overrides: Partial<AppOptions> = {}) {
   return createApp({
     provider: new MockProvider({ tokenDelayMs: 0, analysisDelayMs: 0 }),
+    knowledge,
     logger: pino({ level: 'silent' }),
     rateLimitPerMin: 1000,
     streamTimeoutMs: 5000,
@@ -26,7 +42,6 @@ function buildApp(overrides: Partial<AppOptions> = {}) {
   });
 }
 
-/** Collects the raw SSE body so supertest does not try to parse it. */
 function readStream(test: request.Test) {
   return test.buffer(true).parse((res, callback) => {
     let data = '';
@@ -159,6 +174,44 @@ describe('POST /api/assist/suggestion', () => {
     expect(text).toMatch(/^Hi Anna,/);
   });
 
+  it('sends the retrieved knowledge-base sources before the first delta', async () => {
+    const res = await readStream(request(buildApp()).post('/api/assist/suggestion').send(anna));
+
+    const events = parseEvents(res.body as string);
+    expect(events[0]).toEqual({ type: 'sources', sources: [declinedCardSource] });
+    expect(events[1]).toMatchObject({ type: 'delta' });
+  });
+
+  it('hands the same sources to the provider', async () => {
+    const received: unknown[] = [];
+    const spy: LlmProvider = {
+      name: 'spy',
+      async *suggestReply(_conversation, { sources }) {
+        received.push(...sources);
+        yield 'ok';
+      },
+      analyze: () => Promise.reject(new Error('unused')),
+    };
+    await readStream(
+      request(buildApp({ provider: spy }))
+        .post('/api/assist/suggestion')
+        .send(anna),
+    );
+    expect(received).toEqual([declinedCardSource]);
+  });
+
+  it('sends an empty sources event when nothing matches', async () => {
+    const unrelated = {
+      ...anna,
+      subject: 'Xylophone',
+      messages: [{ ...anna.messages[0]!, text: 'Xylophone' }],
+    };
+    const res = await readStream(
+      request(buildApp()).post('/api/assist/suggestion').send(unrelated),
+    );
+    expect(parseEvents(res.body as string)[0]).toEqual({ type: 'sources', sources: [] });
+  });
+
   it('returns a regular JSON 400 for an invalid body, before streaming starts', async () => {
     const res = await request(buildApp()).post('/api/assist/suggestion').send({ nope: true });
     expect(res.status).toBe(400);
@@ -182,7 +235,10 @@ describe('POST /api/assist/suggestion', () => {
 
     expect(res.status).toBe(200);
     const events = parseEvents(res.body as string);
-    expect(events[0]).toEqual({ type: 'delta', text: 'Partial ' });
+    expect(events.find((event) => event.type === 'delta')).toEqual({
+      type: 'delta',
+      text: 'Partial ',
+    });
     expect(events.at(-1)).toMatchObject({ type: 'error' });
     expect(res.body as string).not.toContain('sk-ant-123');
   });

@@ -6,7 +6,6 @@ import styles from './AssistPanel.module.css';
 
 export function AnalysisCard({ conversation }: { conversation: Conversation }) {
   const headingId = useId();
-  // `currentData` (not `data`) so the previous conversation's analysis never shows.
   const { currentData, isFetching, isError, refetch } = useGetAnalysisQuery(conversation);
 
   return (

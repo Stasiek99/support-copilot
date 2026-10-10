@@ -7,7 +7,6 @@ export type Category = z.infer<typeof categorySchema>;
 
 export const MAX_MESSAGE_LENGTH = 2000;
 export const MAX_MESSAGES_PER_CONVERSATION = 50;
-/** Upper bound for all message text sent to the LLM in one request (cost + injection surface). */
 export const MAX_CONTEXT_CHARS = 20_000;
 
 export const messageSchema = z.object({
@@ -27,7 +26,6 @@ export const conversationSchema = z.object({
 });
 export type Conversation = z.infer<typeof conversationSchema>;
 
-/** Request body for the assist endpoints: a conversation within the total size budget. */
 export const assistRequestSchema = conversationSchema.refine(
   (conversation) =>
     conversation.messages.reduce((total, message) => total + message.text.length, 0) <=
@@ -45,7 +43,6 @@ export const INTENTS = [
 ] as const;
 export const SENTIMENTS = ['negative', 'neutral', 'positive'] as const;
 
-/** Structured analysis of a conversation. Always validated, including model output. */
 export const analysisSchema = z.object({
   summary: z.string().min(1).max(600),
   intent: z.enum(INTENTS),
@@ -55,8 +52,15 @@ export type Analysis = z.infer<typeof analysisSchema>;
 export type Intent = Analysis['intent'];
 export type Sentiment = Analysis['sentiment'];
 
-/** Events sent over SSE by POST /api/assist/suggestion. */
+export const sourceSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1).max(200),
+  text: z.string().min(1).max(1500),
+});
+export type Source = z.infer<typeof sourceSchema>;
+
 export const streamEventSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('sources'), sources: z.array(sourceSchema) }),
   z.object({ type: z.literal('delta'), text: z.string() }),
   z.object({ type: z.literal('done') }),
   z.object({ type: z.literal('error'), message: z.string() }),
