@@ -16,14 +16,18 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "npm run typecheck --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present && tsc -p e2e",
     "test": "npm run test --workspaces --if-present",
     "check": "npm run lint && npm run format:check && npm run typecheck && npm run test",
     "dev:server": "npm run dev --workspace @support-copilot/server",
-    "dev:web": "npm run dev --workspace @support-copilot/web"
+    "dev:web": "npm run dev --workspace @support-copilot/web",
+    "test:coverage": "npm run test:coverage --workspaces --if-present",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.64.0",
     "concurrently": "^10.0.5",
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
