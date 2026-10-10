@@ -10,6 +10,7 @@ import {
 import { pino } from 'pino';
 import request from 'supertest';
 import { createApp, type AppOptions } from './app';
+import { LlmError } from './llm/errors';
 import { MockProvider } from './llm/mockProvider';
 import { createKnowledgeBase } from './rag/knowledgeBase';
 import type { LlmProvider } from './llm/provider';
@@ -271,6 +272,41 @@ describe('POST /api/assist/analysis error handling', () => {
     expect(res.status).toBe(500);
     expect(apiErrorSchema.parse(res.body).error.code).toBe('internal_error');
     expect(JSON.stringify(res.body)).not.toContain('sk-ant-123');
+  });
+});
+
+describe('LLM failures', () => {
+  const failingWith = (error: Error): LlmProvider => ({
+    name: 'failing',
+    // eslint-disable-next-line require-yield
+    async *suggestReply() {
+      throw error;
+    },
+    analyze: () => Promise.reject(error),
+  });
+
+  it('maps an LLM error on analysis to a generic 502', async () => {
+    const provider = failingWith(new LlmError('upstream', 'Anthropic API error (status 529)', 529));
+    const res = await request(buildApp({ provider })).post('/api/assist/analysis').send(anna);
+
+    expect(res.status).toBe(502);
+    const parsed = apiErrorSchema.parse(res.body);
+    expect(parsed.error.code).toBe('upstream_error');
+    expect(JSON.stringify(res.body)).not.toContain('529');
+  });
+
+  it('sends a generic error event when the LLM refuses mid-stream', async () => {
+    const provider = failingWith(new LlmError('refusal', 'The model declined to answer'));
+    const res = await readStream(
+      request(buildApp({ provider })).post('/api/assist/suggestion').send(anna),
+    );
+
+    const events = parseEvents(res.body as string);
+    expect(events.at(-1)).toEqual({
+      type: 'error',
+      message: 'Could not generate a suggestion. Please try again.',
+    });
+    expect(res.body as string).not.toContain('The model declined');
   });
 });
 
