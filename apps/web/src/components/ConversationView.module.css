@@ -1,0 +1,129 @@
+.view {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100%;
+  min-height: 0;
+}
+
+.header {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.customer {
+  font-size: 1.0625rem;
+  font-weight: 650;
+}
+
+.subject {
+  color: var(--color-text-muted);
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  overflow-y: auto;
+}
+
+.message {
+  display: grid;
+  gap: var(--space-1);
+  max-width: min(36rem, 85%);
+}
+
+.message[data-author='agent'] {
+  align-self: flex-end;
+}
+
+.bubble {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--color-bubble-customer);
+  overflow-wrap: anywhere;
+}
+
+.message[data-author='agent'] .bubble {
+  background: var(--color-bubble-agent);
+  color: var(--color-bubble-agent-text);
+}
+
+.meta {
+  font-size: var(--font-size-small);
+  color: var(--color-text-muted);
+}
+
+.message[data-author='agent'] .meta {
+  text-align: right;
+}
+
+.composer {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.label {
+  font-size: var(--font-size-small);
+  font-weight: 650;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 5rem;
+  padding: var(--space-2) var(--space-3);
+  resize: vertical;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.counter {
+  font-size: var(--font-size-small);
+  color: var(--color-text-muted);
+}
+
+.send {
+  min-height: var(--tap-size);
+  padding: 0 var(--space-6);
+  font-weight: 650;
+  color: var(--color-primary-contrast);
+  background: var(--color-primary);
+  border: 0;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.send:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.empty {
+  display: grid;
+  place-content: center;
+  gap: var(--space-2);
+  height: 100%;
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.emptyTitle {
+  font-size: 1.0625rem;
+  font-weight: 650;
+  color: var(--color-text);
+}

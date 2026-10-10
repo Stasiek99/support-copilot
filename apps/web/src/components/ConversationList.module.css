@@ -1,0 +1,112 @@
+.heading {
+  padding: var(--space-4) var(--space-4) var(--space-2);
+  font-size: var(--font-size-small);
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.item {
+  display: grid;
+  gap: var(--space-1);
+  width: 100%;
+  min-height: var(--tap-size);
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  border-left: 3px solid transparent;
+  cursor: pointer;
+}
+
+.item:hover {
+  background: var(--color-surface-muted);
+}
+
+.item[aria-current='true'] {
+  background: var(--color-selected);
+  border-left-color: var(--color-primary);
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.name {
+  font-weight: 650;
+}
+
+.time {
+  flex-shrink: 0;
+  font-size: var(--font-size-small);
+  color: var(--color-text-muted);
+}
+
+.subject {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.snippet {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--font-size-small);
+  color: var(--color-text-muted);
+}
+
+.badge {
+  justify-self: start;
+  padding: 0 var(--space-2);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge[data-category='payments'] {
+  background: var(--badge-payments-bg);
+  color: var(--badge-payments-text);
+}
+
+.badge[data-category='delivery'] {
+  background: var(--badge-delivery-bg);
+  color: var(--badge-delivery-text);
+}
+
+.badge[data-category='returns'] {
+  background: var(--badge-returns-bg);
+  color: var(--badge-returns-text);
+}
+
+.badge[data-category='account'] {
+  background: var(--badge-account-bg);
+  color: var(--badge-account-text);
+}
+
+.status {
+  padding: var(--space-4);
+  color: var(--color-text-muted);
+}
+
+.error {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  color: var(--color-danger);
+}
+
+.retry {
+  justify-self: start;
+  min-height: var(--tap-size);
+  padding: 0 var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
