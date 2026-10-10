@@ -7,9 +7,11 @@
     "dev": "tsx watch --env-file-if-exists=../../.env src/server.ts",
     "start": "tsx --env-file-if-exists=../../.env src/server.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run --passWithNoTests",
+    "smoke:anthropic": "tsx --env-file-if-exists=../../.env scripts/smoke-anthropic.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.133.0",
     "@support-copilot/shared": "*",
     "express": "^5.2.1",
     "express-rate-limit": "^8.7.1",

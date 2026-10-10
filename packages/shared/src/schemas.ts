@@ -69,7 +69,13 @@ export type StreamEvent = z.infer<typeof streamEventSchema>;
 
 export const apiErrorSchema = z.object({
   error: z.object({
-    code: z.enum(['invalid_request', 'rate_limited', 'not_found', 'internal_error']),
+    code: z.enum([
+      'invalid_request',
+      'rate_limited',
+      'not_found',
+      'upstream_error',
+      'internal_error',
+    ]),
     message: z.string(),
     requestId: z.string().optional(),
     details: z.array(z.object({ path: z.string(), message: z.string() })).optional(),

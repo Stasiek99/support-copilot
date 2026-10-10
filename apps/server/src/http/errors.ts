@@ -1,5 +1,6 @@
 import type { ApiError } from '@support-copilot/shared';
 import type { ErrorRequestHandler, RequestHandler, Response } from 'express';
+import { LlmError } from '../llm/errors';
 
 type ErrorCode = ApiError['error']['code'];
 type ErrorDetails = NonNullable<ApiError['error']['details']>;
@@ -59,6 +60,18 @@ export const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
   if (isClientParserError(error)) {
     const message = error.status === 413 ? 'Request body is too large' : 'Malformed request body';
     sendError(res, requestId, error.status, 'invalid_request', message);
+    return;
+  }
+
+  if (error instanceof LlmError) {
+    req.log.error({ kind: error.kind, upstreamStatus: error.upstreamStatus }, 'llm request failed');
+    sendError(
+      res,
+      requestId,
+      502,
+      'upstream_error',
+      'The AI service could not complete the request',
+    );
     return;
   }
 

@@ -15,7 +15,7 @@ const logger = pino({
     : { transport: { target: 'pino-pretty', options: { colorize: true } } }),
 });
 
-const provider = createProvider(config);
+const provider = createProvider(config, logger);
 const knowledgeDir =
   config.KNOWLEDGE_DIR ?? fileURLToPath(new URL('../../../knowledge', import.meta.url));
 const knowledge = await loadKnowledgeBase(knowledgeDir);
