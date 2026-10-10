@@ -3,7 +3,14 @@ import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { App } from '../App';
 import { renderWithStore } from '../test/renderWithStore';
-import { analysisUrl, sseEvents, sseResponse, suggestionUrl, testAnalysis } from '../test/handlers';
+import {
+  analysisUrl,
+  sseEvents,
+  sseResponse,
+  suggestionUrl,
+  testAnalysis,
+  testSource,
+} from '../test/handlers';
 import { server } from '../test/server';
 
 async function openConversation(name: RegExp) {
@@ -67,6 +74,36 @@ describe('AssistPanel', () => {
       expect(screen.getByRole('button', { name: 'Regenerate' })).toBeInTheDocument();
     });
 
+    it('shows the knowledge-base sources the suggestion is based on', async () => {
+      await openConversation(/Anna Kowalska/);
+      expect(screen.queryByRole('list', { name: 'Knowledge base sources' })).toBeNull();
+
+      await userEvent.click(screen.getByRole('button', { name: 'Suggest reply' }));
+
+      const list = await screen.findByRole('list', { name: 'Knowledge base sources' });
+      expect(within(list).getByText(testSource.title)).toBeInTheDocument();
+      expect(within(list).getByText(testSource.text)).toBeInTheDocument();
+    });
+
+    it('shows no sources section when retrieval found nothing', async () => {
+      server.use(
+        http.post(suggestionUrl, () =>
+          sseResponse(
+            sseEvents([
+              { type: 'sources', sources: [] },
+              { type: 'delta', text: 'Plain reply.' },
+              { type: 'done' },
+            ]),
+          ),
+        ),
+      );
+      await openConversation(/Anna Kowalska/);
+      await userEvent.click(screen.getByRole('button', { name: 'Suggest reply' }));
+
+      expect(await screen.findByText('Plain reply.')).toBeInTheDocument();
+      expect(screen.queryByRole('list', { name: 'Knowledge base sources' })).toBeNull();
+    });
+
     it('moves the accepted suggestion into the reply field and focuses it', async () => {
       await openConversation(/Anna Kowalska/);
       await userEvent.click(screen.getByRole('button', { name: 'Suggest reply' }));
@@ -96,7 +133,6 @@ describe('AssistPanel', () => {
               controller.enqueue(
                 encoder.encode('data: {"type":"delta","text":"Partial reply"}\n\n'),
               );
-              // Never closes: the stream stays open until the client aborts.
             },
           });
           return new Response(stream, { headers: { 'Content-Type': 'text/event-stream' } });

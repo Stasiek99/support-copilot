@@ -6,11 +6,9 @@ const envSchema = z.object({
   ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_MODEL: z.string().default('claude-haiku-4-5'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
-  /** Max requests per minute per client to the LLM endpoints (cost control). */
   RATE_LIMIT_PER_MIN: z.coerce.number().int().positive().default(20),
-  /** Number of reverse proxies in front of the app (Render, etc.); 0 for local development. */
   TRUST_PROXY: z.coerce.number().int().min(0).default(0),
-  /** Hard cap for a single streamed suggestion. */
+  KNOWLEDGE_DIR: z.string().optional(),
   STREAM_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
   MOCK_TOKEN_DELAY_MS: z.coerce.number().int().min(0).default(25),
   MOCK_ANALYSIS_DELAY_MS: z.coerce.number().int().min(0).default(400),

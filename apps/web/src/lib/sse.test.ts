@@ -27,6 +27,18 @@ describe('readStreamEvents', () => {
     expect(events).toEqual([{ type: 'delta', text: 'Hi' }, { type: 'done' }]);
   });
 
+  it('parses a sources event', async () => {
+    const source = { id: 'a#b', title: 'A: B', text: 'Body.' };
+    const events = await collect(
+      responseFromChunks([
+        `data: ${JSON.stringify({ type: 'sources', sources: [source] })}
+
+`,
+      ]),
+    );
+    expect(events).toEqual([{ type: 'sources', sources: [source] }]);
+  });
+
   it('reassembles an event split across chunks', async () => {
     const events = await collect(
       responseFromChunks(['data: {"type":"del', 'ta","text":"Hel', 'lo"}\n', '\n']),
@@ -41,7 +53,7 @@ describe('readStreamEvents', () => {
 
   it('keeps multibyte characters split across chunks intact', async () => {
     const bytes = encoder.encode('data: {"type":"delta","text":"Wiśniewski"}\n\n');
-    const split = bytes.indexOf(0xc5) + 1; // between the two bytes of "ś"
+    const split = bytes.indexOf(0xc5) + 1;
     const stream = new ReadableStream<Uint8Array>({
       start(controller) {
         controller.enqueue(bytes.slice(0, split));

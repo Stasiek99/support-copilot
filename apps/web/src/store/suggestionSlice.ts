@@ -1,4 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { Source } from '@support-copilot/shared';
 import { conversationSelected } from './uiSlice';
 
 export type SuggestionStatus = 'idle' | 'streaming' | 'done' | 'stopped' | 'error';
@@ -7,6 +8,7 @@ export interface SuggestionState {
   status: SuggestionStatus;
   conversationId: string | null;
   text: string;
+  sources: Source[];
   error: string | null;
 }
 
@@ -14,6 +16,7 @@ export const initialSuggestionState: SuggestionState = {
   status: 'idle',
   conversationId: null,
   text: '',
+  sources: [],
   error: null,
 };
 
@@ -22,10 +25,19 @@ const suggestionSlice = createSlice({
   initialState: initialSuggestionState,
   reducers: {
     suggestionStarted(_state, action: PayloadAction<string>) {
-      return { status: 'streaming', conversationId: action.payload, text: '', error: null };
+      return {
+        status: 'streaming',
+        conversationId: action.payload,
+        text: '',
+        sources: [],
+        error: null,
+      };
+    },
+    suggestionSourcesReceived(state, action: PayloadAction<Source[]>) {
+      if (state.status !== 'streaming') return;
+      state.sources = action.payload;
     },
     suggestionDelta(state, action: PayloadAction<string>) {
-      // Late chunks from a cancelled stream must not leak into a newer state.
       if (state.status !== 'streaming') return;
       state.text += action.payload;
     },
@@ -54,6 +66,7 @@ const suggestionSlice = createSlice({
 
 export const {
   suggestionStarted,
+  suggestionSourcesReceived,
   suggestionDelta,
   suggestionCompleted,
   suggestionStopped,

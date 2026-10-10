@@ -5,15 +5,19 @@ import { sendError } from '../http/errors';
 import { startEventStream, writeEvent } from '../http/sse';
 import { parseBody } from '../http/validate';
 import type { LlmProvider } from '../llm/provider';
+import type { KnowledgeBase } from '../rag/knowledgeBase';
+import { buildKnowledgeQuery } from '../rag/query';
 
 export interface AssistRouterOptions {
   provider: LlmProvider;
+  knowledge: KnowledgeBase;
   rateLimitPerMin: number;
   streamTimeoutMs: number;
 }
 
 export function createAssistRouter({
   provider,
+  knowledge,
   rateLimitPerMin,
   streamTimeoutMs,
 }: AssistRouterOptions): Router {
@@ -45,7 +49,6 @@ export function createAssistRouter({
   });
 
   router.post('/suggestion', async (req, res) => {
-    // Validate before opening the stream so bad input gets a regular JSON 400.
     const conversation = parseBody(assistRequestSchema, req.body);
 
     const controller = new AbortController();
@@ -58,9 +61,12 @@ export function createAssistRouter({
     });
     const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(streamTimeoutMs)]);
 
+    const sources = knowledge.search(buildKnowledgeQuery(conversation));
+
     startEventStream(res);
     try {
-      for await (const text of provider.suggestReply(conversation, { signal })) {
+      writeEvent(res, { type: 'sources', sources });
+      for await (const text of provider.suggestReply(conversation, { signal, sources })) {
         writeEvent(res, { type: 'delta', text });
       }
       writeEvent(res, { type: 'done' });

@@ -5,6 +5,7 @@ import {
   suggestionFailed,
   suggestionReducer,
   suggestionReset,
+  suggestionSourcesReceived,
   suggestionStarted,
   suggestionStopped,
 } from './suggestionSlice';
@@ -13,7 +14,35 @@ import { conversationSelected } from './uiSlice';
 describe('suggestionSlice', () => {
   it('starts streaming with empty text for the given conversation', () => {
     const state = suggestionReducer(initialSuggestionState, suggestionStarted('c-1'));
-    expect(state).toEqual({ status: 'streaming', conversationId: 'c-1', text: '', error: null });
+    expect(state).toEqual({
+      status: 'streaming',
+      conversationId: 'c-1',
+      text: '',
+      sources: [],
+      error: null,
+    });
+  });
+
+  const source = { id: 'a#b', title: 'A: B', text: 'Body.' };
+
+  it('stores the sources received while streaming', () => {
+    let state = suggestionReducer(initialSuggestionState, suggestionStarted('c-1'));
+    state = suggestionReducer(state, suggestionSourcesReceived([source]));
+    expect(state.sources).toEqual([source]);
+  });
+
+  it('ignores sources that arrive after the stream ended', () => {
+    let state = suggestionReducer(initialSuggestionState, suggestionStarted('c-1'));
+    state = suggestionReducer(state, suggestionStopped());
+    state = suggestionReducer(state, suggestionSourcesReceived([source]));
+    expect(state.sources).toEqual([]);
+  });
+
+  it('clears the sources when a new suggestion starts', () => {
+    let state = suggestionReducer(initialSuggestionState, suggestionStarted('c-1'));
+    state = suggestionReducer(state, suggestionSourcesReceived([source]));
+    state = suggestionReducer(state, suggestionStarted('c-1'));
+    expect(state.sources).toEqual([]);
   });
 
   it('appends deltas while streaming', () => {
@@ -48,7 +77,13 @@ describe('suggestionSlice', () => {
     let state = suggestionReducer(initialSuggestionState, suggestionStarted('c-1'));
     state = suggestionReducer(state, suggestionFailed('Boom'));
     state = suggestionReducer(state, suggestionStarted('c-1'));
-    expect(state).toEqual({ status: 'streaming', conversationId: 'c-1', text: '', error: null });
+    expect(state).toEqual({
+      status: 'streaming',
+      conversationId: 'c-1',
+      text: '',
+      sources: [],
+      error: null,
+    });
   });
 
   it('resets when another conversation is selected', () => {
