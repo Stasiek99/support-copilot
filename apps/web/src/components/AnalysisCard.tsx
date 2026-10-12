@@ -1,12 +1,13 @@
 import type { Conversation } from '@support-copilot/shared';
 import { useId } from 'react';
+import { describeQueryError } from '../lib/errors';
 import { INTENT_LABELS, SENTIMENT_LABELS } from '../lib/format';
 import { useGetAnalysisQuery } from '../store/api';
 import styles from './AssistPanel.module.css';
 
 export function AnalysisCard({ conversation }: { conversation: Conversation }) {
   const headingId = useId();
-  const { currentData, isFetching, isError, refetch } = useGetAnalysisQuery(conversation);
+  const { currentData, isFetching, isError, error, refetch } = useGetAnalysisQuery(conversation);
 
   return (
     <section className={styles.card} aria-labelledby={headingId} aria-busy={isFetching}>
@@ -22,7 +23,7 @@ export function AnalysisCard({ conversation }: { conversation: Conversation }) {
 
       {isError && !isFetching && (
         <div className={styles.error} role="alert">
-          <p>Could not analyze this conversation.</p>
+          <p>{describeQueryError(error, 'Could not analyze this conversation.')}</p>
           <button type="button" className={styles.button} onClick={() => void refetch()}>
             Try again
           </button>

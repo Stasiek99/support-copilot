@@ -40,6 +40,13 @@ describe('AssistPanel', () => {
       expect(await screen.findByText('Analyzing conversation…')).toBeInTheDocument();
     });
 
+    it('explains a network failure instead of a generic error', async () => {
+      server.use(http.post(analysisUrl, () => HttpResponse.error()));
+      await openConversation(/Anna Kowalska/);
+
+      expect(await screen.findByRole('alert')).toHaveTextContent('Cannot reach the server');
+    });
+
     it('shows an error with a working retry', async () => {
       let calls = 0;
       server.use(
@@ -182,6 +189,26 @@ describe('AssistPanel', () => {
       await userEvent.click(screen.getByRole('button', { name: 'Suggest reply' }));
 
       expect(await screen.findByRole('alert')).toHaveTextContent(/Too many requests/);
+    });
+
+    it('explains a network failure and lets the agent retry', async () => {
+      let calls = 0;
+      server.use(
+        http.post(suggestionUrl, () => {
+          calls += 1;
+          return calls === 1
+            ? HttpResponse.error()
+            : sseResponse(sseEvents([{ type: 'delta', text: 'Back online.' }, { type: 'done' }]));
+        }),
+      );
+      await openConversation(/Anna Kowalska/);
+      await userEvent.click(screen.getByRole('button', { name: 'Suggest reply' }));
+
+      expect(await screen.findByRole('alert')).toHaveTextContent('Cannot reach the server');
+
+      await userEvent.click(screen.getByRole('button', { name: 'Regenerate' }));
+      expect(await screen.findByText('Back online.')).toBeInTheDocument();
+      expect(screen.queryByRole('alert')).toBeNull();
     });
 
     it('reports a stream that ends without a done event', async () => {
