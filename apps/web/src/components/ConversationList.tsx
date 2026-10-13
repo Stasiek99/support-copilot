@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { INBOX_ID } from '../lib/dom';
 import { describeQueryError } from '../lib/errors';
 import { CATEGORY_LABELS, formatTimestamp } from '../lib/format';
 import { useGetConversationsQuery } from '../store/api';
@@ -17,7 +18,7 @@ export function ConversationList() {
   );
 
   return (
-    <nav aria-label="Conversations">
+    <nav id={INBOX_ID} tabIndex={-1} className={styles.inbox} aria-label="Conversations">
       <h2 className={styles.heading}>Inbox</h2>
       {isLoading && (
         <p className={styles.status} role="status">

@@ -4,6 +4,19 @@ import { App } from './App';
 import { renderWithStore } from './test/renderWithStore';
 
 describe('App', () => {
+  it('offers a skip link as the first tab stop that targets the inbox', async () => {
+    renderWithStore(<App />);
+
+    await userEvent.tab();
+    const skipLink = screen.getByRole('link', { name: 'Skip to conversations' });
+    expect(skipLink).toHaveFocus();
+
+    const target = skipLink.getAttribute('href')?.slice(1) ?? '';
+    const inbox = screen.getByRole('navigation', { name: 'Conversations' });
+    expect(inbox).toHaveAttribute('id', target);
+    expect(inbox).toHaveAttribute('tabindex', '-1');
+  });
+
   it('renders the heading and landmarks', async () => {
     renderWithStore(<App />);
 

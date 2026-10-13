@@ -2,6 +2,7 @@ import { configureStore, type ThunkAction, type UnknownAction } from '@reduxjs/t
 import { setupListeners } from '@reduxjs/toolkit/query';
 import { api } from './api';
 import { suggestionReducer } from './suggestionSlice';
+import { themeReducer } from './themeSlice';
 import { uiReducer } from './uiSlice';
 
 export const setupStore = () => {
@@ -10,6 +11,7 @@ export const setupStore = () => {
       [api.reducerPath]: api.reducer,
       ui: uiReducer,
       suggestion: suggestionReducer,
+      theme: themeReducer,
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware().concat(api.middleware),
   });

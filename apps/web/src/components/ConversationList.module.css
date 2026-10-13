@@ -110,3 +110,8 @@
   border-radius: var(--radius);
   cursor: pointer;
 }
+
+/* Programmatic skip-link target only; the buttons inside carry the visible focus. */
+.inbox:focus {
+  outline: none;
+}

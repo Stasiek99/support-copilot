@@ -69,8 +69,8 @@
 }
 
 .factValue[data-sentiment='negative'] {
-  background: #fde4e1;
-  color: #8a1c10;
+  background: var(--sentiment-negative-bg);
+  color: var(--sentiment-negative-text);
 }
 
 .factValue[data-sentiment='neutral'] {
@@ -79,8 +79,8 @@
 }
 
 .factValue[data-sentiment='positive'] {
-  background: #d6efe0;
-  color: #14532d;
+  background: var(--sentiment-positive-bg);
+  color: var(--sentiment-positive-text);
 }
 
 .suggestion {
