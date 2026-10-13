@@ -80,8 +80,13 @@
   border-radius: var(--radius);
 }
 
+.textarea:focus-visible {
+  border-color: var(--color-focus);
+}
+
 .actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
@@ -107,9 +112,24 @@
   background: var(--color-primary-hover);
 }
 
+.send:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
 .send:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* 16px stops iOS Safari from zooming the page when the field is focused. */
+@media (max-width: 45rem) {
+  .textarea {
+    font-size: 1rem;
+  }
+
+  .send {
+    flex: 1 1 8rem;
+  }
 }
 
 .empty {

@@ -72,7 +72,7 @@ test.describe('suggested reply', () => {
     await page.route('**/api/assist/suggestion', (route) => route.abort());
 
     await page.getByRole('button', { name: 'Suggest reply' }).click();
-    await expect(page.getByRole('alert')).toContainText('Could not generate a suggestion');
+    await expect(page.getByRole('alert')).toContainText('Cannot reach the server');
 
     await page.unroute('**/api/assist/suggestion');
     await page.getByRole('button', { name: 'Regenerate' }).click();

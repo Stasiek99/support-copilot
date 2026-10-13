@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+import { INBOX_ID } from '../lib/dom';
+import { describeQueryError } from '../lib/errors';
 import { CATEGORY_LABELS, formatTimestamp } from '../lib/format';
 import { useGetConversationsQuery } from '../store/api';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
@@ -6,7 +8,7 @@ import { conversationSelected } from '../store/uiSlice';
 import styles from './ConversationList.module.css';
 
 export function ConversationList() {
-  const { data, isLoading, isError, refetch } = useGetConversationsQuery();
+  const { data, isLoading, isError, error, refetch } = useGetConversationsQuery();
   const selectedId = useAppSelector((state) => state.ui.selectedConversationId);
   const dispatch = useAppDispatch();
 
@@ -16,7 +18,7 @@ export function ConversationList() {
   );
 
   return (
-    <nav aria-label="Conversations">
+    <nav id={INBOX_ID} tabIndex={-1} className={styles.inbox} aria-label="Conversations">
       <h2 className={styles.heading}>Inbox</h2>
       {isLoading && (
         <p className={styles.status} role="status">
@@ -25,11 +27,16 @@ export function ConversationList() {
       )}
       {isError && (
         <div className={styles.error} role="alert">
-          <p>Could not load conversations.</p>
+          <p>{describeQueryError(error, 'Could not load conversations.')}</p>
           <button type="button" className={styles.retry} onClick={() => void refetch()}>
             Try again
           </button>
         </div>
+      )}
+      {data && sorted.length === 0 && (
+        <p className={styles.status} role="status">
+          No conversations yet. New customer messages will show up here.
+        </p>
       )}
       <ul>
         {sorted.map((conversation) => {

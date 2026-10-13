@@ -16,6 +16,10 @@
   --color-bubble-agent-text: #ffffff;
   --color-focus: #1d4ed8;
   --color-danger: #b42318;
+  --sentiment-negative-bg: #fde4e1;
+  --sentiment-negative-text: #8a1c10;
+  --sentiment-positive-bg: #d6efe0;
+  --sentiment-positive-text: #14532d;
 
   --badge-payments-bg: #fdecc8;
   --badge-payments-text: #6b4300;
@@ -42,4 +46,77 @@
 
   --col-list: 20rem;
   --col-assist: 22.5rem;
+}
+
+/*
+ * Dark palette. It appears twice because CSS cannot share one block between a media query and an
+ * attribute selector: once for the OS preference (unless the user forced light) and once for an
+ * explicit choice. tokens.test.ts keeps both copies identical.
+ */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --color-bg: #0d1117;
+    --color-surface: #151b26;
+    --color-surface-muted: #202839;
+    --color-border: #2f394d;
+    --color-text: #e6e9f0;
+    --color-text-muted: #a3adc2;
+    --color-primary: #3b63e0;
+    --color-primary-hover: #2f52c4;
+    --color-primary-contrast: #ffffff;
+    --color-selected: #1c2a4d;
+    --color-bubble-customer: #202839;
+    --color-bubble-agent: #3b63e0;
+    --color-bubble-agent-text: #ffffff;
+    --color-focus: #8fa8ff;
+    --color-danger: #ff8a80;
+    --sentiment-negative-bg: #4a1d19;
+    --sentiment-negative-text: #ffb4ab;
+    --sentiment-positive-bg: #14392a;
+    --sentiment-positive-text: #a7e3c0;
+
+    --badge-payments-bg: #4a3510;
+    --badge-payments-text: #fbd98a;
+    --badge-delivery-bg: #123a26;
+    --badge-delivery-text: #a7e3c0;
+    --badge-returns-bg: #33224f;
+    --badge-returns-text: #d3c1f7;
+    --badge-account-bg: #12335a;
+    --badge-account-text: #a9d0f5;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-bg: #0d1117;
+  --color-surface: #151b26;
+  --color-surface-muted: #202839;
+  --color-border: #2f394d;
+  --color-text: #e6e9f0;
+  --color-text-muted: #a3adc2;
+  --color-primary: #3b63e0;
+  --color-primary-hover: #2f52c4;
+  --color-primary-contrast: #ffffff;
+  --color-selected: #1c2a4d;
+  --color-bubble-customer: #202839;
+  --color-bubble-agent: #3b63e0;
+  --color-bubble-agent-text: #ffffff;
+  --color-focus: #8fa8ff;
+  --color-danger: #ff8a80;
+  --sentiment-negative-bg: #4a1d19;
+  --sentiment-negative-text: #ffb4ab;
+  --sentiment-positive-bg: #14392a;
+  --sentiment-positive-text: #a7e3c0;
+
+  --badge-payments-bg: #4a3510;
+  --badge-payments-text: #fbd98a;
+  --badge-delivery-bg: #123a26;
+  --badge-delivery-text: #a7e3c0;
+  --badge-returns-bg: #33224f;
+  --badge-returns-text: #d3c1f7;
+  --badge-account-bg: #12335a;
+  --badge-account-text: #a9d0f5;
 }
