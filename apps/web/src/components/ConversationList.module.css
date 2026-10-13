@@ -25,6 +25,15 @@
   background: var(--color-surface-muted);
 }
 
+/* An outside ring would be clipped by the scrolling column. */
+.item:focus-visible {
+  outline-offset: -2px;
+}
+
+.item:active {
+  background: var(--color-selected);
+}
+
 .item[aria-current='true'] {
   background: var(--color-selected);
   border-left-color: var(--color-primary);

@@ -121,6 +121,10 @@
   background: var(--color-surface-muted);
 }
 
+.button:active {
+  transform: translateY(1px);
+}
+
 .primary {
   color: var(--color-primary-contrast);
   background: var(--color-primary);

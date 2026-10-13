@@ -45,6 +45,12 @@ textarea {
   outline-offset: 2px;
 }
 
+@media (forced-colors: active) {
+  :focus-visible {
+    outline-color: Highlight;
+  }
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
