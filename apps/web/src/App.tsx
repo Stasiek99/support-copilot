@@ -1,10 +1,16 @@
 import { APP_NAME } from '@support-copilot/shared';
+import { lazy, Suspense } from 'react';
 import styles from './App.module.css';
-import { AssistPanel } from './components/AssistPanel';
+import { AssistPanelFallback } from './components/AssistPanelFallback';
 import { ConversationList } from './components/ConversationList';
 import { ConversationView } from './components/ConversationView';
 import { ThemeToggle } from './components/ThemeToggle';
 import { INBOX_ID } from './lib/dom';
+
+// Split out of the entry chunk: the panel is not needed for the first paint of the inbox.
+const AssistPanel = lazy(() =>
+  import('./components/AssistPanel').then((m) => ({ default: m.AssistPanel })),
+);
 
 export function App() {
   return (
@@ -24,7 +30,9 @@ export function App() {
           <ConversationView />
         </main>
         <aside className={`${styles.column} ${styles.assist}`} aria-label="Agent assist">
-          <AssistPanel />
+          <Suspense fallback={<AssistPanelFallback />}>
+            <AssistPanel />
+          </Suspense>
         </aside>
       </div>
     </div>

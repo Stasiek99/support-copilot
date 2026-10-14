@@ -19,9 +19,16 @@ async function openConversation(name: RegExp) {
 }
 
 describe('AssistPanel', () => {
-  it('prompts to select a conversation first', () => {
+  it('shows a loading placeholder while the lazy panel chunk loads', () => {
     renderWithStore(<App />);
-    expect(screen.getByText(/Select a conversation to get a summary/)).toBeInTheDocument();
+    const aside = screen.getByRole('complementary', { name: 'Agent assist' });
+    expect(within(aside).getByRole('status')).toHaveTextContent('Loading assistant…');
+    expect(screen.getByRole('heading', { level: 2, name: 'Agent Assist' })).toBeInTheDocument();
+  });
+
+  it('prompts to select a conversation first', async () => {
+    renderWithStore(<App />);
+    expect(await screen.findByText(/Select a conversation to get a summary/)).toBeInTheDocument();
   });
 
   describe('analysis', () => {
