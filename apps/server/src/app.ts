@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
+import path from 'node:path';
 import { seedConversations } from '@support-copilot/shared';
-import express, { type Express } from 'express';
+import express, { type Express, Router } from 'express';
 import helmet from 'helmet';
 import type { Logger } from 'pino';
 import { pinoHttp } from 'pino-http';
@@ -16,9 +17,47 @@ export interface AppOptions {
   rateLimitPerMin: number;
   streamTimeoutMs: number;
   trustProxy: number;
+  /** Built web app to serve next to the API (single-origin deploy). Omit in dev, where Vite serves it. */
+  staticDir?: string;
 }
 
 const SAFE_REQUEST_ID = /^[\w-]{1,64}$/;
+
+const ONE_YEAR_SECONDS = 365 * 24 * 60 * 60;
+
+/**
+ * Serves the built web app. Vite fingerprints everything under /assets, so it can be cached
+ * forever; every other file (index.html, theme-init.js, icons) must be revalidated so a new deploy
+ * is picked up immediately. Unknown GET paths fall back to index.html (client-side routing),
+ * but /api and anything that looks like a file never do: a mistyped API call must stay a JSON 404,
+ * and a missing /assets chunk (stale tab after a deploy) must 404 instead of returning HTML as JS.
+ */
+export function createStaticRouter(staticDir: string): Router {
+  const root = path.resolve(staticDir);
+  const router = Router();
+
+  router.use(
+    express.static(root, {
+      index: false,
+      setHeaders(res, filePath) {
+        const fingerprinted = path.relative(root, filePath).split(path.sep)[0] === 'assets';
+        res.setHeader(
+          'Cache-Control',
+          fingerprinted ? `public, max-age=${ONE_YEAR_SECONDS}, immutable` : 'no-cache',
+        );
+      },
+    }),
+  );
+  router.get('/{*splat}', (req, res, next) => {
+    if (req.path === '/api' || req.path.startsWith('/api/') || path.extname(req.path))
+      return next();
+    res.setHeader('Cache-Control', 'no-cache');
+    res.sendFile('index.html', { root }, (error) => {
+      if (error) next(error);
+    });
+  });
+  return router;
+}
 
 export function createApp({
   provider,
@@ -27,6 +66,7 @@ export function createApp({
   rateLimitPerMin,
   streamTimeoutMs,
   trustProxy,
+  staticDir,
 }: AppOptions): Express {
   const app = express();
   app.set('trust proxy', trustProxy);
@@ -65,6 +105,8 @@ export function createApp({
     '/api/assist',
     createAssistRouter({ provider, knowledge, rateLimitPerMin, streamTimeoutMs }),
   );
+
+  if (staticDir) app.use(createStaticRouter(staticDir));
 
   app.use(notFoundHandler);
   app.use(errorHandler);

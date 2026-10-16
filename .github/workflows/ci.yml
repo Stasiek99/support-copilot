@@ -43,3 +43,14 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t support-copilot:ci .
+      - name: Smoke test the image
+        run: |
+          docker run -d --name app -p 3001:3001 support-copilot:ci
+          for i in $(seq 1 20); do curl -fsS http://localhost:3001/api/health && break; sleep 1; done
+          curl -fsS http://localhost:3001/ | grep -q '<div id="root">'

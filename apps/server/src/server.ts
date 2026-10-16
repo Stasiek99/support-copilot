@@ -1,3 +1,5 @@
+import { access } from 'node:fs/promises';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { pino } from 'pino';
 import { createApp } from './app';
@@ -19,6 +21,16 @@ const provider = createProvider(config, logger);
 const knowledgeDir =
   config.KNOWLEDGE_DIR ?? fileURLToPath(new URL('../../../knowledge', import.meta.url));
 const knowledge = await loadKnowledgeBase(knowledgeDir);
+if (config.STATIC_DIR) {
+  // Fail fast on a missing build instead of serving 404s for every page.
+  await access(path.join(config.STATIC_DIR, 'index.html')).catch(() => {
+    logger.fatal(
+      { staticDir: config.STATIC_DIR },
+      'STATIC_DIR has no index.html; build the web app',
+    );
+    process.exit(1);
+  });
+}
 const app = createApp({
   provider,
   knowledge,
@@ -26,6 +38,7 @@ const app = createApp({
   rateLimitPerMin: config.RATE_LIMIT_PER_MIN,
   streamTimeoutMs: config.STREAM_TIMEOUT_MS,
   trustProxy: config.TRUST_PROXY,
+  staticDir: config.STATIC_DIR,
 });
 
 const server = app.listen(config.PORT, (error) => {
