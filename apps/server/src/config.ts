@@ -15,6 +15,10 @@ const envSchema = z
     RATE_LIMIT_PER_MIN: z.coerce.number().int().positive().default(20),
     TRUST_PROXY: z.coerce.number().int().min(0).default(0),
     KNOWLEDGE_DIR: z.string().optional(),
+    STATIC_DIR: z
+      .string()
+      .optional()
+      .transform((value) => (value ? value : undefined)),
     STREAM_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
     MOCK_TOKEN_DELAY_MS: z.coerce.number().int().min(0).default(25),
     MOCK_ANALYSIS_DELAY_MS: z.coerce.number().int().min(0).default(400),
